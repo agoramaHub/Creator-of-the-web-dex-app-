@@ -1,0 +1,14 @@
+{
+  "name": "dex-app",
+  "version": "2.0.0",
+  "description": "distributed p2p app, only for Beaker and Dat.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "agoramaHub",
+  "license": "MIT",
+  "dependencies": {
+    "choo": "^6.13.0"
+  }
+}
