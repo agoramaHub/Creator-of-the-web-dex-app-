@@ -1,0 +1,18 @@
+node_modules/
+*.swp
+.data
+package-lock.json
+.less*
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+# Temp ignore #
+###############
+app.json
+node_modules
+dat.json
+img/undefined
