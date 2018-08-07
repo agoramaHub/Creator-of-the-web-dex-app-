@@ -7,7 +7,6 @@ function footer(state) {
   <div>
     <script src="/js/animate.js"></script>
     <script src="/js/dragdrop.js"></script>
-    <script src="/js/beakerapi.js"></script>
   </div>
   `
 }

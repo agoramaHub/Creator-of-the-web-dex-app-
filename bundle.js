@@ -8,10 +8,11 @@ function footer(state) {
   <div>
     <script src="/js/animate.js"></script>
     <script src="/js/dragdrop.js"></script>
-    <script src="/js/beakerapi.js"></script>
+
   </div>
   `
 }
+  // <script src="/js/beakerapi.js"></script>
 
 },{"choo/html":6}],2:[function(require,module,exports){
 const html = require('choo/html')
@@ -30,30 +31,53 @@ function header(state) {
 },{"choo/html":6}],3:[function(require,module,exports){
 const html = require('choo/html')
 
-module.exports = prompt
+module.exports = function(state) {
 
-function prompt(state) {
-  return html `
-  <div id="prompt">
-    <div class="content">Loading...</div>
-  </div>
-  `
+  if (!navigator.userAgent.includes('BeakerBrowser')) {
+    return html `
+    <div id="prompt">
+      <div class="content"><p>Sorry! This app only works in the Beaker Browser.</p><a class="btn primary" href="https://beakerbrowser.com/docs/install/">Install Beaker</a></div>
+    </div>
+    `
+  } else {
+    return html `
+    <div id="prompt">
+      <div class="content"></div>
+    </div>
+    `
+  }
+
+
 }
 
 },{"choo/html":6}],4:[function(require,module,exports){
+// Load Choo assets...
 const choo = require('choo')
 
 const html = require('choo/html')
 
 const main = require('./templates/main')
 
+// Beaker Bowser DatArchive API...
+const archive = new DatArchive(window.location)
+
 // Initialise choo applications
 const app = choo()
+
+app.use(function(state, emitter){
+  state.creators = false
+
+  emitter.on('get:creators', async function(){
+    var data = await archive.readdir('img', {stat: true})
+    state.creators = data
+    emitter.emit('render')
+  })
+})
 
 app.route('/', main)
 app.mount('body')
 
-},{"./templates/main":34,"choo":7,"choo/html":6}],5:[function(require,module,exports){
+},{"./templates/main":35,"choo":7,"choo/html":6}],5:[function(require,module,exports){
 var assert = require('assert')
 var LRU = require('nanolru')
 
@@ -391,7 +415,7 @@ function ready (callback) {
   })
 }
 
-},{"assert":35}],9:[function(require,module,exports){
+},{"assert":36}],9:[function(require,module,exports){
 module.exports = attributeToProperty
 
 var transform = {
@@ -896,7 +920,7 @@ Nanobus.prototype._emit = function (arr, eventName, data, uuid) {
   }
 }
 
-},{"assert":35,"nanotiming":27,"remove-array-items":28}],13:[function(require,module,exports){
+},{"assert":36,"nanotiming":27,"remove-array-items":28}],13:[function(require,module,exports){
 var assert = require('assert')
 
 var safeExternalLink = /(noopener|noreferrer) (noopener|noreferrer)/
@@ -2022,7 +2046,7 @@ function Wayfarer (dft) {
   }
 }
 
-},{"./trie":31,"assert":35}],31:[function(require,module,exports){
+},{"./trie":31,"assert":36}],31:[function(require,module,exports){
 var mutate = require('xtend/mutable')
 var assert = require('assert')
 var xtend = require('xtend')
@@ -2160,7 +2184,7 @@ Trie.prototype.mount = function (route, trie) {
   }
 }
 
-},{"assert":35,"xtend":32,"xtend/mutable":33}],32:[function(require,module,exports){
+},{"assert":36,"xtend":32,"xtend/mutable":33}],32:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -2202,26 +2226,77 @@ function extend(target) {
 
 },{}],34:[function(require,module,exports){
 const html = require('choo/html')
+
+module.exports = function(creator, i){
+  var type = creator.name
+  var x = Math.floor((Math.random() * 1000) + 1)
+  var y = Math.floor((Math.random() * 1000) + 1)
+
+  // For some reason DatArchive.readdir() returns with its array an undefined item when using the opt
+  // {stat: true}. To resolve this created a logic statement that filters out an undesirable objs.
+  if (type !== "undefined") {
+    return html `
+      <img src="/img/${type}" id="${i}" class="movable" style="left: ${x}px; top: ${x}px;">
+    `
+  }
+
+}
+
+},{"choo/html":6}],35:[function(require,module,exports){
+
+const html = require('choo/html')
 const prompt = require('../components/prompt')
 const header = require('../components/header')
 const footer = require('../components/footer')
+const creator = require('./creator')
 
-module.exports = function(state) {
-  return html `
-    <body>
-      ${prompt(state)}
-      ${header(state)}
+module.exports = function(state, emit) {
+    var t = {
+      off: 'Loading.....'
+    }
 
-      <div class="container" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-          <!-- <img class="movable" id="mover" src="/img/sir-tim-berners-lee.jpg"> -->
-      </div>
+    if (!state.creators) {
+      emit('get:creators')
+    }
+    // check state.creators load status. returns value false if still loading, returns a second time once
+    // state.creators is loaded... Wonder if this double return is a glitch?
+    console.log(state.creators)
 
-      ${footer(state)}
-    </body>
+    // While state.creators is loading, load html text with obj replacement. Once loaded end while and load
+    // application as per usual...
+    while (!state.creators) {
+      return html `
+        <body>
+          ${prompt(state)}
+          ${header(state)}
+
+          <div class="container" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+              <div id="mover-container">
+                <p>${t.off}</p>
+              </div>
+          </div>
+
+          ${footer(state)}
+        </body>
   `
+    }
+        return html `
+          <body>
+            ${prompt(state)}
+            ${header(state)}
+
+            <div class="container" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+                <div id="mover-container">
+                  ${state.creators.map(creator)}
+                </div>
+            </div>
+
+            ${footer(state)}
+          </body>
+    `
 }
 
-},{"../components/footer":1,"../components/header":2,"../components/prompt":3,"choo/html":6}],35:[function(require,module,exports){
+},{"../components/footer":1,"../components/header":2,"../components/prompt":3,"./creator":34,"choo/html":6}],36:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -2715,7 +2790,7 @@ var objectKeys = Object.keys || function (obj) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"util/":38}],36:[function(require,module,exports){
+},{"util/":39}],37:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -2740,14 +2815,14 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3337,7 +3412,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":37,"_process":39,"inherits":36}],39:[function(require,module,exports){
+},{"./support/isBuffer":38,"_process":40,"inherits":37}],40:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 

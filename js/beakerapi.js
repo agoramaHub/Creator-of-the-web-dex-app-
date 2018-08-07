@@ -33,7 +33,7 @@ the other does is automatically... either or is fine.
       archive = new DatArchive(window.location)
       archiveInfo = await archive.getInfo()
     } catch (err) {
-      updatePrompt('<p>Something went wrong.</p><a href="https://github.com/taravancil/p2p-photo-gallery">Report an issue</a>')
+      updatePrompt('<p>Something went wrong.</p><a href="#">Report an issue</a>')
     }
 
     // render prompt functions, i.e. functions for telling the person to use beaker or something is very very wrong...
@@ -88,52 +88,11 @@ the other does is automatically... either or is fine.
     function renderApp () {
       // clear the prompt
       updatePrompt('')
-      renderImages()
+      // renderImages()
 
       document.querySelectorAll('.create-game').forEach(el => el.addEventListener('click', onCreateGame))
 
     }
-
-    async function renderImages () {
-      console.log("rendering image archive")
-      try {
-        const paths = await archive.readdir('img')
-        console.log(paths)
-        // TODO sort by ctime or mtime
-        for (let i = 0; i < paths.length; i++) {
-          if (paths[i] !== 'undefined') {
-            const path = `/img/${paths[i]}`
-            const orientation = localStorage.getItem(`${archive.url}${path}`)
-            appendImage(path, orientation)
-          }
-        }
-      } catch (err) {
-        updatePrompt('<p>Something went wrong</p>')
-        console.error(err)
-      }
-    }
-
-
-    function appendImage(src, orientation=1) {
-      if (typeof src !== 'string') return
-
-      const el = document.getElementById('drop_zone')
-      const img = document.createElement('img')
-
-      img.classList.add("movable")
-      // img.setAttribute("id", "mover")
-      img.src = src
-      img.addEventListener('load', function(){
-        img.style.left = window.getComputedStyle(img, null).getPropertyValue('left')
-        img.style.bottom = window.getComputedStyle(img, null).getPropertyValue('bottom')
-      })
-
-      el.appendChild(img)
-      console.log('img made!')
-      // document.querySelector('.album-images').appendChild(el)
-      // console.log('appending image to index.html')
-    }
-
 
     // Prompt functions for telling user to use BEAKER!!!!! Get with the programme....
     function renderUAPrompt () {

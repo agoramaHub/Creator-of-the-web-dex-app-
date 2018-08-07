@@ -12,7 +12,7 @@ var intervalId = setInterval(function() {
 
     // Get the left, remove the "px" from the end and convert it to an integer.
     var posX = parseInt(movable.style.left.replace(/px$/, '')) || 0;
-    var posY = parseInt(movable.style.bottom.replace(/px$/, '')) || 0;
+    var posY = parseInt(movable.style.top.replace(/px$/, '')) || 0;
 
     // Add dir * dist
     posX += dir * dist;
@@ -48,7 +48,7 @@ var intervalId = setInterval(function() {
 
     // Set the new position
     movable.style.left = posX + "px";
-    movable.style.bottom = posY + "px";
+    movable.style.top = posY + "px";
   }
 }, 80); // this number is how many milliseconds in between each move.
 // Smaller interval time means smoother movement but slower performance.
