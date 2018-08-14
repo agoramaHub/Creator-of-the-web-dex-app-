@@ -6,13 +6,13 @@ module.exports = footer
 function footer(state) {
   return html `
   <div>
-    <script src="/js/animate.js"></script>
-    <script src="/js/dragdrop.js"></script>
 
+    <script src="/js/animate.js"></script>
   </div>
   `
 }
-  // <script src="/js/beakerapi.js"></script>
+
+    // <script src="/js/dragdrop.js"></script>
 
 },{"choo/html":6}],2:[function(require,module,exports){
 const html = require('choo/html')
@@ -29,25 +29,38 @@ function header(state) {
 }
 
 },{"choo/html":6}],3:[function(require,module,exports){
+/**
+NOTE:: Currently this error check function is in place for when the site is navigated to thuurgh
+       http ports. Currently in the state the app is in its not available to pin to hashbase or homebase
+       as for some reason it plays with the storage capacity and maxes it out...
+**/
 const html = require('choo/html')
 
 module.exports = function(state) {
 
   if (!navigator.userAgent.includes('BeakerBrowser')) {
-    return html `
-    <div id="prompt">
-      <div class="content"><p>Sorry! This app only works in the Beaker Browser.</p><a class="btn primary" href="https://beakerbrowser.com/docs/install/">Install Beaker</a></div>
-    </div>
-    `
-  } else {
+    renderUAPrompt()
+    return
+  }
+
     return html `
     <div id="prompt">
       <div class="content"></div>
     </div>
     `
-  }
+    // Prompt functions for telling user to use BEAKER!!!!! Get with the programme....
+    function renderUAPrompt () {
+      updatePrompt('<p>Sorry >.< This app only works in the Beaker Browser.</p><a class="btn primary" href="https://beakerbrowser.com/docs/install/">Install Beaker</a>')
+    }
 
-
+    function updatePrompt (html) {
+      if (typeof html !== 'string') return
+      if (html.length) {
+        document.querySelector('#prompt').innerHTML = `<div class="content">${html}</div>`
+      } else {
+        document.querySelector('#prompt').innerHTML = html
+      }
+    }
 }
 
 },{"choo/html":6}],4:[function(require,module,exports){
@@ -66,10 +79,16 @@ const app = choo()
 
 app.use(function(state, emitter){
   state.creators = false
+  state.domLoad = false
 
   emitter.on('get:creators', async function(){
     var data = await archive.readdir('img', {stat: true})
     state.creators = data
+    emitter.emit('render')
+  })
+
+  emitter.on('DOMContentLoaded', function(){
+    state.domLoad = true
     emitter.emit('render')
   })
 })
@@ -2229,15 +2248,48 @@ const html = require('choo/html')
 
 module.exports = function(creator, i){
   var type = creator.name
-  var x = Math.floor((Math.random() * 1000) + 1)
-  var y = Math.floor((Math.random() * 1000) + 1)
+
+  // Parent container element
+  const parent = document.getElementById('mover-container')
+  var parentX = parent.offsetWidth
+  var parentY = parent.offsetHeight
+
+  // Start position for imgs variable
+  var x = startX(parentX)
+  var y = startY(parentY)
+
 
   // For some reason DatArchive.readdir() returns with its array an undefined item when using the opt
   // {stat: true}. To resolve this created a logic statement that filters out an undesirable objs.
   if (type !== "undefined") {
     return html `
-      <img src="/img/${type}" id="${i}" class="movable" style="left: ${x}px; top: ${x}px;">
+      <img src="/img/${type}" id="${i}" class="movable" style="left: ${x}px; top: ${y}px;">
     `
+  }
+
+  // Start img position functions...
+  // The logical element of this function determines were the end of the img
+  // is in relation to the parent elements current width, which is called by
+  // DomElement.offsetWidth (we use Hiegh for y parameter). If the remainder of
+  // the multi subtract the pos random number is less than 100 we know the edge
+  // of the img's right side is past the edge of the parent element.
+  // NOTE: current img size is set to 100px, 100px.
+  function startX(parentX){
+    var multi = parentX
+    var pos = Math.floor((Math.random() * multi) + 1)
+    if (multi - pos < 100) {
+      pos = multi - 100
+    }
+    return pos
+  }
+
+  function startY(parentY){
+    var multi = parentY
+    var pos = Math.floor((Math.random() * multi) + 1)
+    if (pos < 100) {
+      pos = 100
+    }
+    return pos
   }
 
 }
@@ -2249,8 +2301,9 @@ const prompt = require('../components/prompt')
 const header = require('../components/header')
 const footer = require('../components/footer')
 const creator = require('./creator')
+// const animate = require('../js/animate.js')
 
-module.exports = function(state, emit) {
+module.exports = function(state, emit, i) {
     var t = {
       off: 'Loading.....'
     }
@@ -2278,8 +2331,10 @@ module.exports = function(state, emit) {
 
           ${footer(state)}
         </body>
-  `
+      `
     }
+
+    // Loaded emit html render return
         return html `
           <body>
             ${prompt(state)}
@@ -2293,7 +2348,7 @@ module.exports = function(state, emit) {
 
             ${footer(state)}
           </body>
-    `
+        `
 }
 
 },{"../components/footer":1,"../components/header":2,"../components/prompt":3,"./creator":34,"choo/html":6}],36:[function(require,module,exports){

@@ -4,8 +4,9 @@ const prompt = require('../components/prompt')
 const header = require('../components/header')
 const footer = require('../components/footer')
 const creator = require('./creator')
+// const animate = require('../js/animate.js')
 
-module.exports = function(state, emit) {
+module.exports = function(state, emit, i) {
     var t = {
       off: 'Loading.....'
     }
@@ -33,8 +34,10 @@ module.exports = function(state, emit) {
 
           ${footer(state)}
         </body>
-  `
+      `
     }
+
+    // Loaded emit html render return
         return html `
           <body>
             ${prompt(state)}
@@ -48,5 +51,5 @@ module.exports = function(state, emit) {
 
             ${footer(state)}
           </body>
-    `
+        `
 }

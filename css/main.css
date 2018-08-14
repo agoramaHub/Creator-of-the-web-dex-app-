@@ -8,6 +8,10 @@ body {
   width: 100%;
   min-height: 600px;
 }
+#mover-container {
+  width: inherit;
+  min-height: inherit;
+}
 
 .movable {
     position: absolute;
@@ -15,6 +19,6 @@ body {
     height: 100px;
     background: red;
 }
-#container {
+/* #container {
     position: relative;
-}
+} */
