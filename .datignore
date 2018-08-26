@@ -1,4 +1,6 @@
 node_modules/
+package-lock.json
+package.json
 *.swp
 .data
 .less*
@@ -11,7 +13,10 @@ Icon?
 Thumbs.db
 # Temp ignore #
 ###############
-app.json
 node_modules
-dat.json
 img/undefined
+components/
+components
+templates/
+templates
+index.js

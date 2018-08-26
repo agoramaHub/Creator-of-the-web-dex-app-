@@ -1,18 +1,16 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 const html = require('choo/html')
 
-module.exports = footer
+module.exports = function(state){
 
-function footer(state) {
-  return html `
-  <div>
-
-    <script src="/js/animate.js"></script>
-  </div>
-  `
+    return html `
+    <div>
+      <script src="/js/animate.js"></script>
+      <script src="/js/dragdrop.js"></script>
+      <script src="/js/beakerapi.js"></script>
+    </div>
+    `
 }
-
-    // <script src="/js/dragdrop.js"></script>
 
 },{"choo/html":6}],2:[function(require,module,exports){
 const html = require('choo/html')
@@ -79,19 +77,15 @@ const app = choo()
 
 app.use(function(state, emitter){
   state.creators = false
-  state.domLoad = false
 
   emitter.on('get:creators', async function(){
     var data = await archive.readdir('img', {stat: true})
     state.creators = data
     emitter.emit('render')
   })
-
-  emitter.on('DOMContentLoaded', function(){
-    state.domLoad = true
-    emitter.emit('render')
-  })
 })
+
+// app.use(dragdrop)
 
 app.route('/', main)
 app.mount('body')
@@ -2249,16 +2243,6 @@ const html = require('choo/html')
 module.exports = function(creator, i){
   var type = creator.name
 
-  // Parent container element
-  // const parent = document.getElementById('mover-container')
-  // var parentX = parent.offsetWidth
-  // var parentY = parent.offsetHeight
-
-  // Start position for imgs variable
-  // var x = startX(parentX)
-  // var y = startY(parentY)
-
-
   // For some reason DatArchive.readdir() returns with its array an undefined item when using the opt
   // {stat: true}. To resolve this created a logic statement that filters out an undesirable objs.
   if (type !== "undefined") {
@@ -2266,31 +2250,6 @@ module.exports = function(creator, i){
       <img src="/img/${type}" id="${i}" class="movable">
     `
   }
-
-  // Start img position functions...
-  // The logical element of this function determines were the end of the img
-  // is in relation to the parent elements current width, which is called by
-  // DomElement.offsetWidth (we use Hiegh for y parameter). If the remainder of
-  // the multi subtract the pos random number is less than 100 we know the edge
-  // of the img's right side is past the edge of the parent element.
-  // NOTE: current img size is set to 100px, 100px.
-  // function startX(parentX){
-  //   var multi = parentX
-  //   var pos = Math.floor((Math.random() * multi) + 1)
-  //   if (multi - pos < 100) {
-  //     pos = multi - 100
-  //   }
-  //   return pos
-  // }
-  //
-  // function startY(parentY){
-  //   var multi = parentY
-  //   var pos = Math.floor((Math.random() * multi) + 1)
-  //   if (pos < 100) {
-  //     pos = 100
-  //   }
-  //   return pos
-  // }
 
 }
 
@@ -2301,6 +2260,7 @@ const prompt = require('../components/prompt')
 const header = require('../components/header')
 const footer = require('../components/footer')
 const creator = require('./creator')
+
 // const animate = require('../js/animate.js')
 
 module.exports = function(state, emit, i) {
@@ -2320,16 +2280,7 @@ module.exports = function(state, emit, i) {
     while (!state.creators) {
       return html `
         <body>
-          ${prompt(state)}
-          ${header(state)}
-
-          <div class="container" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-              <div id="mover-container">
-                <p>${t.off}</p>
-              </div>
-          </div>
-
-          ${footer(state)}
+          <h1>${t.off}</h1>
         </body>
       `
     }
@@ -2340,7 +2291,7 @@ module.exports = function(state, emit, i) {
             ${prompt(state)}
             ${header(state)}
 
-            <div class="container" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+            <div class="container" id="drop_zone" ondragover="event">
                 <div id="mover-container">
                   ${state.creators.map(creator)}
                 </div>
@@ -2349,6 +2300,7 @@ module.exports = function(state, emit, i) {
             ${footer(state)}
           </body>
         `
+
 }
 
 },{"../components/footer":1,"../components/header":2,"../components/prompt":3,"./creator":34,"choo/html":6}],36:[function(require,module,exports){

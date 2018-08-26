@@ -4,6 +4,7 @@ const prompt = require('../components/prompt')
 const header = require('../components/header')
 const footer = require('../components/footer')
 const creator = require('./creator')
+
 // const animate = require('../js/animate.js')
 
 module.exports = function(state, emit, i) {
@@ -23,16 +24,7 @@ module.exports = function(state, emit, i) {
     while (!state.creators) {
       return html `
         <body>
-          ${prompt(state)}
-          ${header(state)}
-
-          <div class="container" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-              <div id="mover-container">
-                <p>${t.off}</p>
-              </div>
-          </div>
-
-          ${footer(state)}
+          <h1>${t.off}</h1>
         </body>
       `
     }
@@ -43,7 +35,7 @@ module.exports = function(state, emit, i) {
             ${prompt(state)}
             ${header(state)}
 
-            <div class="container" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+            <div class="container" id="drop_zone" ondragover="event">
                 <div id="mover-container">
                   ${state.creators.map(creator)}
                 </div>
@@ -52,4 +44,5 @@ module.exports = function(state, emit, i) {
             ${footer(state)}
           </body>
         `
+
 }

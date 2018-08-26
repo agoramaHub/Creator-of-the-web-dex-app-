@@ -1,91 +1,75 @@
-var container = document.getElementById('drop_zone');
-var newImg = document.createElement('img');
+var container = document.getElementById('drop_zone')
+// var newImg = document.createElement('img');
 
-/*
-This is the original drag drop functionality... replacing for simplier version with file loading
-capabilities and document appending operations, i.e. to index.html.
-*/
-async function dragOverHandler(ev) {
-  console.log('File(s) in drop zone');
+// drag over event listener //
+container.addEventListener('dragover', async function(event){
+  console.log('File(s) in drop zone')
 
   // Prevent default behavior (Prevent file from being opened)
-  ev.preventDefault();
-}
+  event.preventDefault()
+}, false);
 
-async function dropHandler(ev) {
-  console.log('File(s) dropped');
+// Drop event Listener //
+container.addEventListener('drop', async function(event){
+  console.log('File(s) dropped into zone')
 
   // Prevent default behavior (Prevent file from being opened)
-  ev.stopPropagation();
-  ev.preventDefault();
+  event.stopPropagation()
+  event.preventDefault()
 
-  var dt = ev.dataTransfer;
-  var files = dt.files;
-  // if (files.length > 1) {
-  //   alert("you can only upload one file at a time...")
-  // }
-
-  handleFiles(files)
-}
-
-// New event hander function....
-async function handleFiles(files) {
-
-  // lets check if user is owner of the site or news to create own site for their use...
-  const archive = await DatArchive.load(window.location)
-  const archiveinfo = await archive.getInfo()
-  // remove header if not archive owner
-    if (!archiveInfo.isOwner) {
-      document.body.removeChild(document.querySelector('header'))
-      console.log('Sorry you do not have permissions to update this site... Please create our own game site by clicking the button above...')
+  // handle dropped files....
+  var dt = event.dataTransfer;
+    var files = dt.files;
+    if (files.length > 1) {
+      alert("you can only upload one file at a time...")
     }
+  console.log(files)
+  handleFiles(files)
+}, false);
 
-  // message for telling us that the user is in fact the owner and can proceed as normal..
-  console.log('Found dat url and uploading new img file')
+// Handle dropped files function.... //
+async function handleFiles(files){
+  // lets check if user is owner of the site or news to create own site for their use...
+    const archive = await DatArchive.load(window.location)
+    const archiveInfo = await archive.getInfo()
 
-  for (let i = 0; i < files.length; i += 1) {
-    const reader = new FileReader()
-    const file = files[i]
+    // remove header if not archive/site owner
+      if (!archiveInfo.isOwner) {
+        document.body.removeChild(document.querySelector('header'))
+        console.log('Sorry you do not have permissions to update this site... Please create our own game site by clicking the button above...')
+      }
+    //confirm that user is infact the archive/aites owner.
+    console.log('You are the owner of this site!')
 
-    reader.onload = async function () {
-            console.log('starting path uplaod');
-            const path = `/img/${file.name}`
-            const orientation = readOrientationMetadata(reader.result)
+    // While we are only allowing a single file upload at a time. We still run a for loop for scaling purposes.
+    // This way is we choose to allow uses to upload in mass we can simply remove the limit at the drop event.
+    for (let i = 0; i < files.length; i += 1) {
+        const reader = new FileReader()
+        const file = files[i]
 
-            // write the orientiation metadata to localStorage
-            localStorage.setItem(`${archive.url}${path}`, orientation)
+        reader.onload = async function () {
+                console.log('starting path uplaod')
+                const path = `/img/${file.name}`
+                const orientation = readOrientationMetadata(reader.result)
 
-            // only write the file if it doesn't already exist
-            try {
-              await archive.stat(path)
-            } catch (e) {
-              await archive.writeFile(path, reader.result)
-              // await archive.commit()
-              // appendImage(path, orientation)
-              window.location.reload()
-            }
-          }
-    reader.readAsArrayBuffer(file)
-  }
+                // write the orientiation metadata to localStorage
+                localStorage.setItem(`${archive.url}${path}`, orientation)
 
+                // only write the file if it doesn't already exist
+                try {
+                  await archive.stat(path)
+                } catch (e) {
+                  await archive.writeFile(path, reader.result)
+                  // Currently I am reloading the target window to allow for the application to load the
+                  // new image element. However in the future it would be nice to have this loading function to
+                  // to me updates by a state machine....
+                  window.location.reload()
+                }
+              }
+        reader.readAsArrayBuffer(file)
+      }
 }
 
-function appendImage(src, orientation=1) {
-  if (typeof src !== 'string') return
-
-  const el = document.getElementById('drop_zone')
-
-  const img = document.createElement('img')
-  img.src = src
-  img.classList.add("movable")
-  img.setAttribute("id","mover")
-  // img.style.transform = IMAGE_ROTATION[orientation]
-  // img.addEventListener('click', onToggleSelected)
-
-  el.appendChild(img)
-  // document.querySelector('.album-images').appendChild(el)
-  console.log('appending image to index.html')
-}
 
 function readOrientationMetadata (buf) {
   const scanner = new DataView(buf)

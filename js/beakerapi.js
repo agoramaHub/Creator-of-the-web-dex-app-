@@ -20,22 +20,7 @@ the other does is automatically... either or is fine.
 
 (async  function () {
 
-    // render prompt if not using Beaker
-    if (!navigator.userAgent.includes('BeakerBrowser')) {
-      renderUAPrompt()
-      return
-    }
-
-    // setup global var for view dat
-    let archive
-
-    try {
-      archive = new DatArchive(window.location)
-      archiveInfo = await archive.getInfo()
-    } catch (err) {
-      updatePrompt('<p>Something went wrong.</p><a href="#">Report an issue</a>')
-    }
-
+    let archive = await DatArchive.load(window.location)
     // render prompt functions, i.e. functions for telling the person to use beaker or something is very very wrong...
     // in addition this function being call also contains within it a document identifier that attachs the function
     // below to the button on the html page and listens to click events....
@@ -59,26 +44,29 @@ the other does is automatically... either or is fine.
       await game.mkdir('/css')
       await game.mkdir('/js')
 
+      // Read originals essential build files.
+      const html = await archive.readFile('index.html')
+      const bundle = await archive.readFile('bundle.js')
+      const animation = await archive.readFile('/js/animate.js')
+      const dragdrop = await archive.readFile('/js/dragdrop.js')
+      const beakerAPI = await archive.readFile('js/beakerapi.js')
+      const cssmain = await archive.readFile('/css/main.css')
+      const img = await archive.readFile('/img/sir-tim-berners-lee.jpg', 'base64')
+
+      // Writing corresponding file for newly created app.
+      await game.writeFile('index.html', html)
+      await game.writeFile('bundle.js', bundle)
+      await game.writeFile('/js/animate.js', animation)
+      await game.writeFile('/js/beakerapi.js', beakerAPI)
+      await game.writeFile('/js/dragdrop.js', dragdrop)
+      await game.writeFile('/css/main.css', cssmain)
+      await game.writeFile('/img/sir-tim-berners-lee.jpg', img, 'base64')
+
       // Save our dat url to local library
       .then(archive => {
         localStorage.targetDatURL = game.url
         console.log('Created and saved!')
       })
-
-      // Writing corresponding file for newly created app.
-      const html = await archive.readFile('temp.html')
-      const js = await archive.readFile('/js/index.js')
-      const animation = await archive.readFile('/js/animate.js')
-      const dragdrop = await archive.readFile('/js/dragdrop.js')
-      const cssmain = await archive.readFile('/css/main.css')
-      const img = await archive.readFile('/img/sir-tim-berners-lee.jpg', 'base64')
-      await game.writeFile('index.html', html)
-      await game.writeFile('/js/animate.js', animation)
-      await game.writeFile('/js/index.js', js)
-      await game.writeFile('/js/dragdrop.js', dragdrop)
-      await game.writeFile('/css/main.css', cssmain)
-      await game.writeFile('/img/sir-tim-berners-lee.jpg', img, 'base64')
-      // await game.commit()
 
       // open newly created dat in browser window...
       window.location = game.url
@@ -86,26 +74,8 @@ the other does is automatically... either or is fine.
 
     // render app function ---- + document and event listen function....
     function renderApp () {
-      // clear the prompt
-      updatePrompt('')
-      // renderImages()
-
       document.querySelectorAll('.create-game').forEach(el => el.addEventListener('click', onCreateGame))
-
     }
 
-    // Prompt functions for telling user to use BEAKER!!!!! Get with the programme....
-    function renderUAPrompt () {
-      updatePrompt('<p>Sorry >.< This app only works in the Beaker Browser.</p><a class="btn primary" href="https://beakerbrowser.com/docs/install/">Install Beaker</a>')
-    }
-
-    function updatePrompt (html) {
-      if (typeof html !== 'string') return
-      if (html.length) {
-        document.querySelector('#prompt').innerHTML = `<div class="content">${html}</div>`
-      } else {
-        document.querySelector('#prompt').innerHTML = html
-      }
-    }
 
 })()

@@ -13,19 +13,15 @@ const app = choo()
 
 app.use(function(state, emitter){
   state.creators = false
-  state.domLoad = false
 
   emitter.on('get:creators', async function(){
     var data = await archive.readdir('img', {stat: true})
     state.creators = data
     emitter.emit('render')
   })
-
-  emitter.on('DOMContentLoaded', function(){
-    state.domLoad = true
-    emitter.emit('render')
-  })
 })
+
+// app.use(dragdrop)
 
 app.route('/', main)
 app.mount('body')
