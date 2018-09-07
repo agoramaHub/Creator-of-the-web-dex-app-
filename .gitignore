@@ -1,6 +1,20 @@
+# Image file for game...
+img/ada-lovelace.jpg
+img/angelina-jolie.jpeg
+img/Elon-Musk.jpg
+img/hackers.jpg
+img/Mark-Zuckerberg.jpg
+img/net-art.jpg
+img/philip-emeagwli.jpg
+img/profile.png
+img/radia-perlman.jpg
+img/Stacy-Horn.jpg
+
+# Dat System Files
+dat.json
+
 # System files
 .DS_Store
-
 
 # Logs
 logs
